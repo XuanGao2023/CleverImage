@@ -27,22 +27,22 @@ public class ImageGetter {
 	public static final String FOLDER = "imagegetter";
 	public static String FILE_FOLDER;
 
+	protected static ImageGetter instance;
 	protected static int BITMAPLRUCACHE_SIZE = 20 * 1024 * 1024; //default cache size 20MB
 	protected LruCache<String, Bitmap> bitmapLruCache;
-	protected static ImageGetter imageGetterInstance;
 	protected Handler handlerMainThread = new Handler();
 
 	protected HandlerThread handlerThreadDiskReader = new HandlerThread("image-disk-reader");
 	protected Handler handlerDiskReader;
 
-	protected HandlerThread handlerThreadDiskWriter = new HandlerThread("image-disk_writer");
+	protected HandlerThread handlerThreadDiskWriter = new HandlerThread("image-disk-writer");
 	protected Handler handlerDiskWriter;
 
 	public static synchronized ImageGetter getInstance() {
-		if (imageGetterInstance == null) {
+		if (instance == null) {
 			initInstance(FOLDER, BITMAPLRUCACHE_SIZE);
 		}
-		return imageGetterInstance;
+		return instance;
 	}
 
 	public static synchronized ImageGetter initInstance() {
@@ -50,7 +50,7 @@ public class ImageGetter {
 	}
 
 	public static synchronized ImageGetter initInstance(String foldername, Integer bitmapcachesize) {
-		if (imageGetterInstance != null) {
+		if (instance != null) {
 			throw new IllegalStateException("ImageGetter has already been initialized!");
 		}
 		if (foldername == null || foldername.length() == 0 || bitmapcachesize == null || bitmapcachesize <= 0) {
@@ -58,9 +58,9 @@ public class ImageGetter {
 					+ foldername + " bitmapcachesize: " + bitmapcachesize);
 		}
 		FILE_FOLDER = Environment.getExternalStorageDirectory() + File.separator + foldername + File.separator;
-		imageGetterInstance = new ImageGetter();
-		imageGetterInstance.initLRUCache(bitmapcachesize);
-		return imageGetterInstance;
+		instance = new ImageGetter();
+		instance.initLRUCache(bitmapcachesize);
+		return instance;
 	}
 
 	protected ImageGetter() {
@@ -87,10 +87,10 @@ public class ImageGetter {
 
 	public static Bitmap getPic(String url, boolean forceupdate, ImageGotListener listener) {
 		if (forceupdate) {
-			imageGetterInstance.loadImageFromInternet(url, listener);
+			instance.loadImageFromInternet(url, listener);
 			return null;
 		} else {
-			Bitmap bitmap = imageGetterInstance.bitmapLruCache.get(imageGetterInstance.getUrlKey(url));
+			Bitmap bitmap = instance.bitmapLruCache.get(instance.getUrlKey(url));
 			if (bitmap != null) {
 				if (listener != null) {
 					listener.OnImageGot(bitmap);
@@ -100,7 +100,7 @@ public class ImageGetter {
 				}
 				return bitmap;
 			} else {
-				if (imageGetterInstance.readImageFromDisk(url, listener)) {
+				if (instance.readImageFromDisk(url, listener)) {
 					if (DEBUG) {
 						Log.d(TAG, "Loading Image from disk.");
 					}
@@ -109,7 +109,7 @@ public class ImageGetter {
 					if (DEBUG) {
 						Log.d(TAG, "Loading Image from internet.");
 					}
-					imageGetterInstance.loadImageFromInternet(url, listener);
+					instance.loadImageFromInternet(url, listener);
 				}
 				return null;
 			}
@@ -137,7 +137,7 @@ public class ImageGetter {
 	}
 
 	protected boolean readImageFromDisk(final String url, ImageGotListener listener) {
-		boolean value = imageGetterInstance.isDiskFileValid(url);
+		boolean value = instance.isDiskFileValid(url);
 		if (!value) {
 			return false;
 		}
