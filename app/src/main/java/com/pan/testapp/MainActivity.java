@@ -10,6 +10,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.pan.cleverimage.ImageGetter;
+
 public class MainActivity extends AppCompatActivity {
 	private TextView textViewTest;
 	private ImageView imageViewTest;
