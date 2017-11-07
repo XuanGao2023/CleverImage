@@ -13,33 +13,34 @@ import com.pan.cleverimage.CleverImageView;
 import com.pan.cleverimage.ImageGetter;
 
 public class MainActivity extends AppCompatActivity {
-	private TextView textViewTest;
-	private CleverImageView cleverImageView;
-	private static final String FILE_URL0 = "https://ss2.baidu.com/6ONYsjip0QIZ8tyhnq/it/" +
+    private TextView textViewTest;
+    private CleverImageView cleverImageView;
+    private static final String FILE_URL0 = "https://ss2.baidu.com/6ONYsjip0QIZ8tyhnq/it/" +
             "u=522425600,1333123193&fm=173&s=9225BD08EA322A8EF73D7401030060C9&w=218&h=146&img.JPEG";
     private static final String FILE_URL1 = "https://ss0.baidu.com/6ONWsjip0QIZ8tyhnq/it/" +
             "u=2861671602,4205204930&fm=173&s=50019D5786616CA4793D90CB03008031&w=218&h=146&img.JPEG";
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
-		checkPermission();
 
-		ImageGetter.initInstance();
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        checkPermission();
 
-		cleverImageView = (CleverImageView) findViewById(R.id.cleverImageView);
-		findViewById(R.id.btnGetPic0).setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				ImageGetter.getPic(FILE_URL0, new ImageGetter.ImageGotListener() {
-					@Override
-					public void OnImageGot(Bitmap bitmap) {
-						System.out.println("OnImageGot: " + FILE_URL0 + bitmap);
-						cleverImageView.setImageBitmap(bitmap);
-					}
-				});
-			}
-		});
+        ImageGetter.initInstance();
+
+        cleverImageView = (CleverImageView) findViewById(R.id.cleverImageView);
+        findViewById(R.id.btnGetPic0).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ImageGetter.getPic(FILE_URL0, new ImageGetter.ImageGotListener() {
+                    @Override
+                    public void OnImageGot(Bitmap bitmap) {
+                        System.out.println("OnImageGot: " + FILE_URL0 + bitmap);
+                        cleverImageView.setImageBitmap(bitmap);
+                    }
+                });
+            }
+        });
         findViewById(R.id.btnGetPic1).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -53,19 +54,19 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-		findViewById(R.id.btnClearMemCache).setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				ImageGetter.getInstance().clearMemCache();
-			}
-		});
-		findViewById(R.id.btnClearDiskCache).setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				ImageGetter.getInstance().clearDiskCache();
-			}
-		});
-		findViewById(R.id.btnCircle).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.btnClearMemCache).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ImageGetter.getInstance().clearMemCache();
+            }
+        });
+        findViewById(R.id.btnClearDiskCache).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ImageGetter.getInstance().clearDiskCache();
+            }
+        });
+        findViewById(R.id.btnCircle).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 cleverImageView.setDisableCircularTransformation(false);
@@ -77,11 +78,11 @@ public class MainActivity extends AppCompatActivity {
                 cleverImageView.setDisableCircularTransformation(true);
             }
         });
-	}
+    }
 
-	public void checkPermission() {
-		if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-			ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-		}
-	}
+    public void checkPermission() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+        }
+    }
 }
