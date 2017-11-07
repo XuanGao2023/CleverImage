@@ -89,6 +89,9 @@ public class ImageGetter {
     public static Bitmap getPic(String url, boolean forceupdate, ImageGotListener listener) {
         ImageGetter ins = ImageGetter.getInstance();
         if (forceupdate) {
+            if (DEBUG) {
+                Log.d(TAG, "Loading Image from internet. url: " + url);
+            }
             ins.loadImageFromInternet(url, listener);
             return null;
         } else {
@@ -98,18 +101,18 @@ public class ImageGetter {
                     listener.OnImageGot(bitmap);
                 }
                 if (DEBUG) {
-                    Log.d(TAG, "Got Image from bitmapLruCache.");
+                    Log.d(TAG, "Got Image from bitmapLruCache. url: " + url);
                 }
                 return bitmap;
             } else {
                 if (ins.readImageFromDisk(url, listener)) {
                     if (DEBUG) {
-                        Log.d(TAG, "Loading Image from disk.");
+                        Log.d(TAG, "Got Image from disk. url: " + url);
                     }
                     return null;
                 } else {
                     if (DEBUG) {
-                        Log.d(TAG, "Loading Image from internet.");
+                        Log.d(TAG, "Loading Image from internet. url: " + url);
                     }
                     ins.loadImageFromInternet(url, listener);
                 }

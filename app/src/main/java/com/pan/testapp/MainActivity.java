@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btnGetPic1).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ImageGetter.getPic(FILE_URL1, new ImageGetter.ImageGotListener() {
+                ImageGetter.getPic(FILE_URL1, true, new ImageGetter.ImageGotListener() {
                     @Override
                     public void OnImageGot(Bitmap bitmap) {
                         System.out.println("OnImageGot: " + FILE_URL1 + bitmap);
