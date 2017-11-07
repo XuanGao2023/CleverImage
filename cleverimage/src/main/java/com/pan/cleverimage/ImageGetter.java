@@ -219,16 +219,18 @@ public class ImageGetter {
 
     protected void loadImageFromInternet(final String url, ImageGotListener listener) {
         final WeakReference<ImageGotListener> wrlistener = new WeakReference<ImageGotListener>(listener);
-        new Thread() {
+        fixedThreadPool.submit(new Runnable() {
             @Override
             public void run() {
-                super.run();
                 Bitmap bitmap = null;
                 try {
                     InputStream in = new java.net.URL(url).openStream();
                     bitmap = BitmapFactory.decodeStream(in);
                 } catch (Exception e) {
                     e.printStackTrace();
+                }
+                if (DEBUG) {
+                    Log.d(TAG, "Got Image from internet. url: " + url);
                 }
                 bitmapLruCache.put(buildCacheKey(url), bitmap);
                 writeImageToDisk(url, bitmap);
@@ -244,7 +246,7 @@ public class ImageGetter {
                 }
                 writeImageToDisk(url, bitmap);
             }
-        }.start();
+        });
     }
 
     protected String getUrlKey(String url) {
