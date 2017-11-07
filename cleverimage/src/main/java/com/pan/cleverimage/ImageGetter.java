@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.text.TextUtils;
 import android.util.Log;
 import android.util.LruCache;
 
@@ -15,6 +16,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  *
@@ -24,62 +27,74 @@ public class ImageGetter {
     private final static String TAG = "ImageGetter";
     private static final boolean DEBUG = true;
 
-    public static final String FOLDER = "imagegetter";
-    public static String FILE_FOLDER;
-
+    public static final String DEFAULT_FOLDERNAME = "imagegetter";
+    public static final int DEFAULT_LRUCACHE_SIZE = 20 * 1024 * 1024; //default cache size 20MB
+    public static final int DEFAULT_THREAD_POOL_SIZE = 5; //default thread pool size
+    protected static String FILE_FOLDER;
     protected static ImageGetter instance;
-    protected static int BITMAPLRUCACHE_SIZE = 20 * 1024 * 1024; //default cache size 20MB
+
     protected LruCache<String, Bitmap> bitmapLruCache;
     protected Handler handlerMainThread = new Handler();
-    private Random randomInCreator = new Random();
+    private Random randomValueCreator = new Random();
 
     protected HandlerThread handlerThreadDiskReader = new HandlerThread("image-disk-reader");
     protected Handler handlerDiskReader;
-
     protected HandlerThread handlerThreadDiskWriter = new HandlerThread("image-disk-writer");
     protected Handler handlerDiskWriter;
+    protected ExecutorService fixedThreadPool;
 
     public static synchronized ImageGetter getInstance() {
         if (instance == null) {
-            initInstance(FOLDER, BITMAPLRUCACHE_SIZE);
+            return initInstance();
         }
         return instance;
     }
 
     public static synchronized ImageGetter initInstance() {
-        return initInstance(FOLDER, BITMAPLRUCACHE_SIZE);
+        return initInstance(DEFAULT_FOLDERNAME, DEFAULT_LRUCACHE_SIZE, DEFAULT_THREAD_POOL_SIZE);
     }
 
-    public static synchronized ImageGetter initInstance(String foldername, Integer bitmapcachesize) {
+    public static synchronized ImageGetter initInstance(String foldername, Integer bitmapcachesize, Integer threadpoolsize) {
         if (instance != null) {
             throw new IllegalStateException("ImageGetter has already been initialized!");
         }
-        if (foldername == null || foldername.length() == 0 || bitmapcachesize == null || bitmapcachesize <= 0) {
-            throw new IllegalArgumentException("Invalid argument! foldername: "
-                    + foldername + " bitmapcachesize: " + bitmapcachesize);
-        }
-        FILE_FOLDER = Environment.getExternalStorageDirectory() + File.separator + foldername + File.separator;
-        instance = new ImageGetter();
-        instance.initLRUCache(bitmapcachesize);
+        instance = new ImageGetter(foldername, bitmapcachesize, threadpoolsize);
         return instance;
     }
 
-    protected ImageGetter() {
+    protected ImageGetter(String foldername, Integer cachesize, Integer poolsize) {
+        initCacheFolder(foldername);
+        initLRUCache(cachesize);
+        initThreadPool(poolsize);
         handlerThreadDiskReader.start();
         handlerThreadDiskWriter.start();
         handlerDiskReader = new Handler(handlerThreadDiskReader.getLooper());
         handlerDiskWriter = new Handler(handlerThreadDiskWriter.getLooper());
     }
 
+    protected void initCacheFolder(String foldername) {
+        if (TextUtils.isEmpty(foldername)) {
+            foldername = DEFAULT_FOLDERNAME;
+        }
+        FILE_FOLDER = Environment.getExternalStorageDirectory() + File.separator + foldername + File.separator;
+    }
+
     protected void initLRUCache(Integer cachesize) {
         if (cachesize == null || cachesize <= 0) {
-            cachesize = BITMAPLRUCACHE_SIZE;
+            cachesize = DEFAULT_LRUCACHE_SIZE;
         }
         bitmapLruCache = new LruCache<String, Bitmap>(cachesize) {
             protected int sizeOf(String key, Bitmap value) {
                 return value.getByteCount();
             }
         };
+    }
+
+    protected void initThreadPool(Integer poolsize) {
+        if (poolsize == null || poolsize <= 0) {
+            poolsize = DEFAULT_THREAD_POOL_SIZE;
+        }
+        fixedThreadPool = Executors.newFixedThreadPool(poolsize);
     }
 
     public static Bitmap getPic(String url, ImageGotListener listener) {
@@ -193,7 +208,7 @@ public class ImageGetter {
             public void run() {
                 String finalfilename = buildDiskFileName(url);
                 FileUtils.deleteFile(finalfilename);
-                String tempfilename = finalfilename + System.currentTimeMillis() + randomInCreator.nextInt();
+                String tempfilename = finalfilename + System.currentTimeMillis() + randomValueCreator.nextInt();
                 String tempfilepath = FILE_FOLDER + finalfilename;
                 //in case the saving procedure interrupted by exception.
                 ImageUtils.save(bitmap, tempfilepath, Bitmap.CompressFormat.PNG);
