@@ -207,7 +207,11 @@ public class ImageGetter {
                 String tempfilename = finalfilename + System.currentTimeMillis() + randomValueCreator.nextInt();
                 String tempfilepath = FILE_FOLDER + finalfilename;
                 //in case the saving procedure interrupted by exception.
-                ImageUtils.save(bitmap, tempfilepath, Bitmap.CompressFormat.PNG);
+                boolean success = ImageUtils.save(bitmap, tempfilepath, Bitmap.CompressFormat.PNG);
+                if(!success) {
+                    FileUtils.deleteFile(tempfilename);
+                    return;
+                }
                 FileUtils.rename(tempfilepath, finalfilename);
             }
         });
@@ -218,17 +222,26 @@ public class ImageGetter {
             @Override
             public void run() {
                 Bitmap bitmap = null;
+                InputStream in;
                 try {
-                    InputStream in = new java.net.URL(url).openStream();
-                    bitmap = BitmapFactory.decodeStream(in);
+                    in = new java.net.URL(url).openStream();
                 } catch (Exception e) {
                     e.printStackTrace();
+                    if (listener != null) {
+                        handlerMainThread.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                listener.OnImageGot(null);
+                            }
+                        });
+                    }
+                    return;
                 }
+                bitmap = BitmapFactory.decodeStream(in);
                 if (DEBUG) {
                     Log.d(TAG, "Got Image from internet. url: " + url);
                 }
                 bitmapLruCache.put(buildCacheKey(url), bitmap);
-                writeImageToDisk(url, bitmap);
                 if (listener != null) {
                     final Bitmap bitmapcallback = bitmap;
                     handlerMainThread.post(new Runnable() {
