@@ -168,30 +168,25 @@ public class ImageGetter {
                 bitmap = loadFromDisk(filepath);
                 if (bitmap == null) {
                     FileUtils.deleteFile(filepath);
-                    if (listener != null) {
-                        final Bitmap bitmapcallback = null;
-                        handlerMainThread.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                listener.OnImageGot(bitmapcallback);
-                            }
-                        });
-                    }
+                    postCallbackOnMainThread(listener, null);
                     return;
                 }
                 bitmapLruCache.put(buildCacheKey(url), bitmap);
-                if (listener != null) {
-                    final Bitmap bitmapcallback = bitmap;
-                    handlerMainThread.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.OnImageGot(bitmapcallback);
-                        }
-                    });
-                }
+                postCallbackOnMainThread(listener, bitmap);
             }
         });
         return true;
+    }
+
+    protected void postCallbackOnMainThread(final ImageGotListener listener, final Bitmap bitmap) {
+        if (listener != null) {
+            handlerMainThread.post(new Runnable() {
+                @Override
+                public void run() {
+                    listener.OnImageGot(bitmap);
+                }
+            });
+        }
     }
 
     protected String buildDiskFileName(String url) {
@@ -208,7 +203,7 @@ public class ImageGetter {
                 String tempfilepath = FILE_FOLDER + finalfilename;
                 //in case the saving procedure interrupted by exception.
                 boolean success = ImageUtils.save(bitmap, tempfilepath, Bitmap.CompressFormat.PNG);
-                if(!success) {
+                if (!success) {
                     FileUtils.deleteFile(tempfilename);
                     return;
                 }
@@ -227,14 +222,7 @@ public class ImageGetter {
                     in = new java.net.URL(url).openStream();
                 } catch (Exception e) {
                     e.printStackTrace();
-                    if (listener != null) {
-                        handlerMainThread.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                listener.OnImageGot(null);
-                            }
-                        });
-                    }
+                    postCallbackOnMainThread(listener, null);
                     return;
                 }
                 bitmap = BitmapFactory.decodeStream(in);
@@ -242,15 +230,7 @@ public class ImageGetter {
                     Log.d(TAG, "Got Image from internet. url: " + url);
                 }
                 bitmapLruCache.put(buildCacheKey(url), bitmap);
-                if (listener != null) {
-                    final Bitmap bitmapcallback = bitmap;
-                    handlerMainThread.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            listener.OnImageGot(bitmapcallback);
-                        }
-                    });
-                }
+                postCallbackOnMainThread(listener, bitmap);
                 writeImageToDisk(url, bitmap);
             }
         });
