@@ -78,6 +78,12 @@ public class MainActivity extends AppCompatActivity {
                 cleverImageView.setDisableCircularTransformation(true);
             }
         });
+        findViewById(R.id.btnSetRes).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cleverImageView.setImageResource(R.mipmap.ic_launcher);
+            }
+        });
     }
 
     public void checkPermission() {
