@@ -14,7 +14,6 @@ import com.pan.cleverimage.util.ImageUtils;
 
 import java.io.File;
 import java.io.InputStream;
-import java.lang.ref.WeakReference;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -156,12 +155,11 @@ public class ImageGetter {
         }
     }
 
-    protected boolean readImageFromDisk(final String url, ImageGotListener listener) {
+    protected boolean readImageFromDisk(final String url, final ImageGotListener listener) {
         boolean value = instance.isDiskFileValid(url);
         if (!value) {
             return false;
         }
-        final WeakReference<ImageGotListener> wrlistener = new WeakReference<ImageGotListener>(listener);
         handlerDiskReader.post(new Runnable() {
             @Override
             public void run() {
@@ -170,26 +168,24 @@ public class ImageGetter {
                 bitmap = loadFromDisk(filepath);
                 if (bitmap == null) {
                     FileUtils.deleteFile(filepath);
-                    final ImageGotListener reallistener = wrlistener.get();
-                    if (reallistener != null) {
+                    if (listener != null) {
                         final Bitmap bitmapcallback = null;
                         handlerMainThread.post(new Runnable() {
                             @Override
                             public void run() {
-                                reallistener.OnImageGot(bitmapcallback);
+                                listener.OnImageGot(bitmapcallback);
                             }
                         });
                     }
                     return;
                 }
                 bitmapLruCache.put(buildCacheKey(url), bitmap);
-                final ImageGotListener reallistener = wrlistener.get();
-                if (reallistener != null) {
+                if (listener != null) {
                     final Bitmap bitmapcallback = bitmap;
                     handlerMainThread.post(new Runnable() {
                         @Override
                         public void run() {
-                            reallistener.OnImageGot(bitmapcallback);
+                            listener.OnImageGot(bitmapcallback);
                         }
                     });
                 }
@@ -217,8 +213,7 @@ public class ImageGetter {
         });
     }
 
-    protected void loadImageFromInternet(final String url, ImageGotListener listener) {
-        final WeakReference<ImageGotListener> wrlistener = new WeakReference<ImageGotListener>(listener);
+    protected void loadImageFromInternet(final String url, final ImageGotListener listener) {
         fixedThreadPool.submit(new Runnable() {
             @Override
             public void run() {
@@ -234,13 +229,12 @@ public class ImageGetter {
                 }
                 bitmapLruCache.put(buildCacheKey(url), bitmap);
                 writeImageToDisk(url, bitmap);
-                final ImageGotListener reallistener = wrlistener.get();
-                if (reallistener != null) {
+                if (listener != null) {
                     final Bitmap bitmapcallback = bitmap;
                     handlerMainThread.post(new Runnable() {
                         @Override
                         public void run() {
-                            reallistener.OnImageGot(bitmapcallback);
+                            listener.OnImageGot(bitmapcallback);
                         }
                     });
                 }
