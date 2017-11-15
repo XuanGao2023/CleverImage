@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         checkPermission();
 
-        ImageGetter.initInstance();
+        ImageGetter.init();
 
         cleverImageView = (CleverImageView) findViewById(R.id.cleverImageView);
         findViewById(R.id.btnGetPic0).setOnClickListener(new View.OnClickListener() {

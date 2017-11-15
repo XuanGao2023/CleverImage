@@ -27,8 +27,8 @@ public class ImageGetter {
     private static final boolean DEBUG = true;
 
     public static final String DEFAULT_FOLDERNAME = "imagegetter";
-    public static final int DEFAULT_LRUCACHE_SIZE = 20 * 1024 * 1024; //default cache size 20MB
-    public static final int DEFAULT_THREAD_POOL_SIZE = 5; //default thread pool size
+    public static final int DEFAULT_MEM_LRUCACHE_SIZE = 20 * 1024 * 1024; //default cache size 20MB
+    public static final int DEFAULT_DOWNLOAD_THREAD_POOL_SIZE = 5; //default thread pool size
     protected static String FILE_FOLDER;
     protected static ImageGetter instance;
 
@@ -44,16 +44,27 @@ public class ImageGetter {
 
     public static synchronized ImageGetter getInstance() {
         if (instance == null) {
-            return initInstance();
+            return init();
         }
         return instance;
     }
 
-    public static synchronized ImageGetter initInstance() {
-        return initInstance(DEFAULT_FOLDERNAME, DEFAULT_LRUCACHE_SIZE, DEFAULT_THREAD_POOL_SIZE);
+    public static synchronized ImageGetter init() {
+        return init(null);
     }
 
-    public static synchronized ImageGetter initInstance(String foldername, Integer bitmapcachesize, Integer threadpoolsize) {
+    public static synchronized ImageGetter init(ImageGetter imagegetter) {
+        if (instance != null) {
+            throw new IllegalStateException("ImageGetter has already been initialized!");
+        }
+        if (imagegetter == null) {
+            return init(DEFAULT_FOLDERNAME, DEFAULT_MEM_LRUCACHE_SIZE, DEFAULT_DOWNLOAD_THREAD_POOL_SIZE);
+        }
+        instance = imagegetter;
+        return instance;
+    }
+
+    public static synchronized ImageGetter init(String foldername, Integer bitmapcachesize, Integer threadpoolsize) {
         if (instance != null) {
             throw new IllegalStateException("ImageGetter has already been initialized!");
         }
@@ -80,7 +91,7 @@ public class ImageGetter {
 
     protected void initLRUCache(Integer cachesize) {
         if (cachesize == null || cachesize <= 0) {
-            cachesize = DEFAULT_LRUCACHE_SIZE;
+            cachesize = DEFAULT_MEM_LRUCACHE_SIZE;
         }
         bitmapLruCache = new LruCache<String, Bitmap>(cachesize) {
             protected int sizeOf(String key, Bitmap value) {
@@ -91,7 +102,7 @@ public class ImageGetter {
 
     protected void initThreadPool(Integer poolsize) {
         if (poolsize == null || poolsize <= 0) {
-            poolsize = DEFAULT_THREAD_POOL_SIZE;
+            poolsize = DEFAULT_DOWNLOAD_THREAD_POOL_SIZE;
         }
         fixedThreadPool = Executors.newFixedThreadPool(poolsize);
     }
