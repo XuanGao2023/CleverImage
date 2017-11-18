@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.pan.cleverimage.CleverImageView;
@@ -69,13 +70,13 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btnCircle).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cleverImageView.setDisableCircularTransformation(false);
+                cleverImageView.setOval(true);
             }
         });
         findViewById(R.id.btnDisableCircle).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cleverImageView.setDisableCircularTransformation(true);
+                cleverImageView.setOval(false);
             }
         });
         findViewById(R.id.btnSetRes).setOnClickListener(new View.OnClickListener() {

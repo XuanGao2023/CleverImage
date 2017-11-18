@@ -8,7 +8,7 @@
 
     <com.pan.cleverimage.CleverImageView
         android:id="@+id/cleverImageView"
-        android:layout_width="100dp"
+        android:layout_width="200dp"
         android:layout_height="100dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
