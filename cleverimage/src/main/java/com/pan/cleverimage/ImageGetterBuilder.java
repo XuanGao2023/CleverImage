@@ -2,7 +2,12 @@ package com.pan.cleverimage;
 
 import android.graphics.Bitmap;
 import android.os.Handler;
-import android.telecom.Call;
+
+import com.pan.cleverimage.task.base.Setting;
+import com.pan.cleverimage.task.base.Task;
+import com.pan.cleverimage.task.module.BitmapDecoder;
+import com.pan.cleverimage.task.module.BitmapSaver;
+import com.pan.cleverimage.task.module.UrlGetter;
 
 import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
@@ -32,31 +37,22 @@ public class ImageGetterBuilder {
 
         bitmapDecoder.setCallback(new Task.Callback<InputStream, Bitmap>() {
             @Override
-            public void OnFinish(InputStream input, Bitmap output) {
+            public void OnFinish(InputStream input, Bitmap output, Setting setting) {
                 if (callback != null) {
                     callback.OnImageGot(output);
                 }
             }
         });
-//        bitmapSaver.setTaskLifeCycle(new Task.TaskLifeCycle<Bitmap, Boolean>() {
-//            @Override
-//            public void OnStart(Bitmap input) {
-//
-//            }
-//
-//            @Override
-//            public void OnEnd(Bitmap input, Boolean output) {
-//                System.out.println("bitmapSaver: " + output);
-//            }
-//        });
-//        bitmapSaver.setCallback(new Task.Callback<Bitmap, Boolean>() {
-//            @Override
-//            public void OnFinish(Bitmap input, Boolean output) {
-//                System.out.println("bitmapSaver: OnFinish" + output);
-//            }
-//        });
-
-        urlGetter.start();
+        Setting setting = new Setting();
+        setting.put("test", "123456");
+        urlGetter.start(setting);
+        bitmapSaver.setCallback(new Task.Callback<Bitmap, Boolean>() {
+            @Override
+            public void OnFinish(Bitmap input, Boolean output, Setting setting) {
+                String key = (String) setting.get("test");
+                System.out.println("setting.get(test): " + key);
+            }
+        });
     }
 
     public interface Callback {

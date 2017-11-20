@@ -1,8 +1,10 @@
-package com.pan.cleverimage;
+package com.pan.cleverimage.task.module;
 
 import android.graphics.Bitmap;
 import android.os.Environment;
 
+import com.pan.cleverimage.task.base.Setting;
+import com.pan.cleverimage.task.base.Task;
 import com.pan.cleverimage.util.FileUtils;
 import com.pan.cleverimage.util.ImageUtils;
 
@@ -17,8 +19,9 @@ public class BitmapSaver extends Task<Bitmap, Boolean> {
     private static final String TAG = "BitmapSaver";
 
     private static String FILE_FOLDER = Environment.getExternalStorageDirectory() + File.separator;
-    public BitmapSaver(ExecutorService executor, Bitmap input, TaskLifeCycle taskLifeCycle) {
-        super(executor, input, taskLifeCycle);
+
+    public BitmapSaver(ExecutorService executor, Bitmap input) {
+        super(executor, input);
     }
 
     public BitmapSaver(ExecutorService executorService) {
@@ -26,7 +29,7 @@ public class BitmapSaver extends Task<Bitmap, Boolean> {
     }
 
     @Override
-    Boolean OnProcessing(Bitmap input) {
+    public Boolean OnProcessing(Bitmap input, Setting setting) {
         String filename = FILE_FOLDER + "test.png";
         //todo add extra information.
         //in case the saving procedure interrupted by exception.

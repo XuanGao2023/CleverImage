@@ -1,7 +1,9 @@
-package com.pan.cleverimage;
+package com.pan.cleverimage.task.module;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+
+import com.pan.cleverimage.task.base.Setting;
+import com.pan.cleverimage.task.base.Task;
 
 import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
@@ -22,7 +24,7 @@ public class UrlGetter extends Task<String, InputStream> {
     }
 
     @Override
-    InputStream OnProcessing(String input) {
+    public InputStream OnProcessing(String input, Setting setting) {
         Bitmap bitmap = null;
         InputStream in;
         try {

@@ -9,9 +9,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 
 import com.pan.cleverimage.ImageGetterBuilder;
-import com.pan.cleverimage.UrlGetter;
-import com.pan.cleverimage.BitmapSaver;
-import com.pan.cleverimage.Task;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

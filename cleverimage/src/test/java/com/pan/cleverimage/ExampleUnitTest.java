@@ -1,7 +1,7 @@
 package com.pan.cleverimage;
 
-import android.graphics.Bitmap;
-import android.util.Log;
+import com.pan.cleverimage.task.module.BitmapSaver;
+import com.pan.cleverimage.task.module.UrlGetter;
 
 import org.junit.Test;
 

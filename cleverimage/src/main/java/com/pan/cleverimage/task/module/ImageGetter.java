@@ -1,4 +1,4 @@
-package com.pan.cleverimage;
+package com.pan.cleverimage.task.module;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;

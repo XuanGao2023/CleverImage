@@ -1,7 +1,10 @@
-package com.pan.cleverimage;
+package com.pan.cleverimage.task.module;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+
+import com.pan.cleverimage.task.base.Setting;
+import com.pan.cleverimage.task.base.Task;
 
 import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
@@ -22,7 +25,7 @@ public class BitmapDecoder extends Task<InputStream, Bitmap> {
     }
 
     @Override
-    Bitmap OnProcessing(InputStream input) {
+    public Bitmap OnProcessing(InputStream input, Setting setting) {
         Bitmap bitmap = BitmapFactory.decodeStream(input);
         return bitmap;
     }

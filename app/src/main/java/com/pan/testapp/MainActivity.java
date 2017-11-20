@@ -7,11 +7,10 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.pan.cleverimage.CleverImageView;
-import com.pan.cleverimage.ImageGetter;
+import com.pan.cleverimage.task.module.ImageGetter;
 
 public class MainActivity extends AppCompatActivity {
     private TextView textViewTest;

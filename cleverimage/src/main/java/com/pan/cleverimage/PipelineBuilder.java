@@ -5,5 +5,5 @@ package com.pan.cleverimage;
  */
 
 public class PipelineBuilder {
-    
+
 }
