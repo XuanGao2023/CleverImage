@@ -41,13 +41,6 @@ public class ImageGetter {
     protected ExecutorService loadFromDiskExecutorService;
     public static final Handler handlerMainThread = new Handler();
 
-    private ImageGetter(ExecutorService network, ExecutorService decoder, ExecutorService saveToDisk, ExecutorService loadFromDisk) {
-        this.networkRequestExecutorService = network;
-        this.imageDecodeExecutorService = decoder;
-        this.saveToDiskExecutorService = saveToDisk;
-        this.loadFromDiskExecutorService = loadFromDisk;
-    }
-
     public static synchronized ImageGetter getInstance() {
         if (instance == null) {
             return init();
@@ -114,6 +107,12 @@ public class ImageGetter {
         };
     }
 
+    protected Setting buildSetting(String url) {
+        Setting setting = new Setting(FILE_CACHE_FOLDER);
+        setting.putUrl(url);
+        return setting;
+    }
+
     public static Bitmap getImage(String url, Callback callback) {
         return getImage(url, false, callback);
     }
@@ -127,8 +126,7 @@ public class ImageGetter {
             ins.loadImageFromInternet(url, callback);
             return null;
         } else {
-            Setting setting = new Setting(FILE_CACHE_FOLDER);
-            setting.putUrl(url);
+            Setting setting = ins.buildSetting(url);
             String key = setting.buildCacheKey();
             Bitmap bitmap = ins.bitmapLruCache.get(key);
             if (bitmap != null) {
@@ -158,18 +156,16 @@ public class ImageGetter {
 
     protected void saveImageToDisk(String url, Bitmap bitmap) {
         BitmapSaver bitmapSaver = new BitmapSaver(saveToDiskExecutorService, FILE_CACHE_FOLDER);
-        Setting setting = new Setting(FILE_CACHE_FOLDER);
-        setting.putUrl(url);
+        Setting setting = buildSetting(url);
         bitmapSaver.setInput(bitmap);
         bitmapSaver.start(setting);
     }
 
     protected void loadImageFromInternet(final String url, final Callback callback) {
-        Setting setting = new Setting(FILE_CACHE_FOLDER);
-        setting.putUrl(url);
+        Setting setting = buildSetting(url);
         UrlGetter urlGetter = new UrlGetter(instance.networkRequestExecutorService, url);
         BitmapDecoder bitmapDecoder = new BitmapDecoder(instance.imageDecodeExecutorService);
-        urlGetter.setNextTask(bitmapDecoder);
+        urlGetter.addNextTask(bitmapDecoder);
         bitmapDecoder.setCallback(new Task.Callback<InputStream, Bitmap>() {
             @Override
             public void OnFinish(InputStream input, Bitmap output, Setting setting) {
@@ -184,24 +180,21 @@ public class ImageGetter {
     }
 
     protected boolean readImageFromDisk(String url, final Callback callback) {
-        Setting setting = new Setting(FILE_CACHE_FOLDER);
-        setting.putUrl(url);
+        Setting setting = buildSetting(url);
         if (!setting.isDiskFileValid()) {
             return false;
         }
         BitmapLoader bitmapLoader = new BitmapLoader(loadFromDiskExecutorService);
-        bitmapLoader.setSetting(setting);
-        bitmapLoader.setCallback(new Task.Callback<String, Bitmap>() {
+        bitmapLoader.start(setting.buildDiskFileDir(), setting, new Task.Callback<String, Bitmap>() {
             @Override
             public void OnFinish(String input, Bitmap output, Setting setting) {
                 String file = setting.buildCacheKey();
                 instance.bitmapLruCache.put(file, output);
-                if(callback != null) {
+                if (callback != null) {
                     callback.OnImageGot(output);
                 }
             }
         });
-        bitmapLoader.start(setting.buildDiskFileDir());
         return true;
     }
 

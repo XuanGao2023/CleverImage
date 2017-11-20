@@ -91,7 +91,7 @@ public abstract class Task<TINPUT, TOUTPUT> implements Runnable {
         nextTask.addAll(list);
     }
 
-    public void setNextTask(Task task) {
+    public void addNextTask(Task task) {
         nextTask.add(task);
     }
 
@@ -108,6 +108,10 @@ public abstract class Task<TINPUT, TOUTPUT> implements Runnable {
     }
 
     public void start(TINPUT t, Setting setting) {
+        start(t, setting, null);
+    }
+
+    public void start(TINPUT t, Setting setting, Callback callback) {
         if (executorService == null) {
             throw new IllegalArgumentException("executorService is null!");
         }
@@ -117,6 +121,9 @@ public abstract class Task<TINPUT, TOUTPUT> implements Runnable {
         //will all all the settings to this.
         if (setting != null) {
             this.taskSetting.putAll(setting);
+        }
+        if (callback != null) {
+            taskCallback = callback;
         }
         //input can be null.
         executorService.submit(this);
