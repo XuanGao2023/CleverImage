@@ -243,6 +243,13 @@ public class ImageGetter {
                             reallistener.OnImageGot(bitmapcallback);
                         }
                     });
+                    if (DEBUG) {
+                        Log.d(TAG, "reallistener is not null!");
+                    }
+                } else {
+                    if (DEBUG) {
+                        Log.d(TAG, "reallistener is null!");
+                    }
                 }
                 writeImageToDisk(url, bitmap);
             }
