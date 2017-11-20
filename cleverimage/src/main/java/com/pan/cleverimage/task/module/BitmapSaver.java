@@ -18,24 +18,24 @@ import java.util.concurrent.ExecutorService;
 public class BitmapSaver extends Task<Bitmap, Boolean> {
     private static final String TAG = "BitmapSaver";
 
-    private static String FILE_FOLDER = Environment.getExternalStorageDirectory() + File.separator;
+    private String strFileFolder;
 
     public BitmapSaver(ExecutorService executor, Bitmap input) {
         super(executor, input);
     }
 
-    public BitmapSaver(ExecutorService executorService) {
+    public BitmapSaver(ExecutorService executorService, String dir) {
         super(executorService);
+        this.strFileFolder = dir;
     }
 
     @Override
     public Boolean OnProcessing(Bitmap input, Setting setting) {
-        String filename = FILE_FOLDER + "test.png";
-        //todo add extra information.
+        String filedir = setting.buildDiskFileDir();
         //in case the saving procedure interrupted by exception.
-        boolean success = ImageUtils.save(input, filename, Bitmap.CompressFormat.PNG);
+        boolean success = ImageUtils.save(input, filedir, Bitmap.CompressFormat.PNG);
         if (!success) {
-            FileUtils.deleteFile(filename);
+            FileUtils.deleteFile(filedir);
             return false;
         }
         return true;

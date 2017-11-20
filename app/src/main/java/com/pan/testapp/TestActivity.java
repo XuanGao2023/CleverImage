@@ -8,7 +8,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
-import com.pan.cleverimage.ImageGetterBuilder;
+import com.pan.cleverimage.ImageGetter;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,8 +34,8 @@ public class TestActivity extends AppCompatActivity {
                 ExecutorService getter = Executors.newFixedThreadPool(5);
                 ExecutorService decoder = Executors.newFixedThreadPool(5);
                 ExecutorService saver = Executors.newFixedThreadPool(5);
-                ImageGetterBuilder builder = new ImageGetterBuilder(getter, decoder, saver);
-                builder.getImage(FILE_URL0, new ImageGetterBuilder.Callback() {
+                ImageGetter builder = ImageGetter.getInstance();
+                builder.getImage(FILE_URL0, new ImageGetter.Callback() {
                     @Override
                     public void OnImageGot(Bitmap bitmap) {
                         imageView.setImageBitmap(bitmap);

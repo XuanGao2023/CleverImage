@@ -10,7 +10,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.pan.cleverimage.CleverImageView;
-import com.pan.cleverimage.task.module.ImageGetter;
+import com.pan.cleverimage.ImageGetter;
 
 public class MainActivity extends AppCompatActivity {
     private TextView textViewTest;
@@ -26,13 +26,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         checkPermission();
 
-        ImageGetter.init();
 
         cleverImageView = (CleverImageView) findViewById(R.id.cleverImageView);
         findViewById(R.id.btnGetPic0).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ImageGetter.getPic(FILE_URL0, new ImageGetter.ImageGotListener() {
+                ImageGetter.getImage(FILE_URL0, new ImageGetter.Callback() {
                     @Override
                     public void OnImageGot(Bitmap bitmap) {
                         System.out.println("OnImageGot: " + FILE_URL0 + bitmap);
@@ -44,10 +43,10 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btnGetPic1).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ImageGetter.getPic(FILE_URL1, true, new ImageGetter.ImageGotListener() {
+                ImageGetter.getImage(FILE_URL1, new ImageGetter.Callback() {
                     @Override
                     public void OnImageGot(Bitmap bitmap) {
-                        System.out.println("OnImageGot: " + FILE_URL1 + bitmap);
+                        System.out.println("OnImageGot: "+FILE_URL1 +bitmap);
                         cleverImageView.setImageBitmap(bitmap);
                     }
                 });

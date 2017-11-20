@@ -27,18 +27,5 @@ public class ExampleUnitTest {
 
     @Test
     public void baseFunctionTest() {
-        ExecutorService getterExecutorService = Executors.newFixedThreadPool(5);
-        ExecutorService loaderExecutorService = Executors.newFixedThreadPool(5);
-
-        UrlGetter urlGetter = new UrlGetter(getterExecutorService, FILE_URL0);
-        BitmapSaver bitmapSaver = new BitmapSaver(loaderExecutorService);
-        urlGetter.setNextTask(bitmapSaver);
-        urlGetter.start();
-
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 }
