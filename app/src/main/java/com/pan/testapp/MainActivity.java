@@ -20,7 +20,8 @@ public class MainActivity extends AppCompatActivity {
             "u=522425600,1333123193&fm=173&s=9225BD08EA322A8EF73D7401030060C9&w=218&h=146&img.JPEG";
     private static final String FILE_URL1 = "https://ss0.baidu.com/6ONWsjip0QIZ8tyhnq/it/" +
             "u=2861671602,4205204930&fm=173&s=50019D5786616CA4793D90CB03008031&w=218&h=146&img.JPEG";
-
+    private static final String FILE_LARGE = "http://download.sdk.mob.com/web/images/2017/" +
+            "11/13/15/1510557801245/790_11339_3550.8359375.jpg";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btnGetPic0).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cleverImageView.setImageUrl(FILE_URL0);
+                cleverImageView.setImageUrl(FILE_LARGE);
             }
         });
         findViewById(R.id.btnGetPic1).setOnClickListener(new View.OnClickListener() {

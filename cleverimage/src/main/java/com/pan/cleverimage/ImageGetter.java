@@ -29,8 +29,9 @@ public class ImageGetter {
     private static final boolean DEBUG = true;
 
     public static final String DEFAULT_FOLDERNAME = "imagegetter";
-    public static final int DEFAULT_MEM_LRUCACHE_SIZE = 20 * 1024 * 1024; //default cache size 20MB
+    public static final int DEFAULT_MEM_LRUCACHE_SIZE = 50 * 1024 * 1024; //default memory cache size 20MB
     public static final int DEFAULT_DOWNLOAD_THREAD_POOL_SIZE = 5; //default thread pool size
+    private static final long DEFAULT_MAX_IMAGE_COMPRESS_SIZE = 2 * 1024 * 1024;
     protected static String FILE_FOLDER;
     protected static ImageGetter instance;
 
@@ -217,7 +218,7 @@ public class ImageGetter {
                 String tempfilename = finalfilename + System.currentTimeMillis() + randomValueCreator.nextInt();
                 String tempfilepath = FILE_FOLDER + finalfilename;
                 //in case the saving procedure interrupted by exception.
-                boolean success = ImageUtils.save(bitmap, tempfilepath, Bitmap.CompressFormat.PNG);
+                boolean success = ImageUtils.save(bitmap, tempfilepath, Bitmap.CompressFormat.JPEG);
                 if (!success) {
                     FileUtils.deleteFile(tempfilename);
                     return;
@@ -241,6 +242,7 @@ public class ImageGetter {
                     return;
                 }
                 bitmap = BitmapFactory.decodeStream(in);
+                bitmap = compressImageFromInternet(url, bitmap);
                 if (DEBUG) {
                     Log.d(TAG, "Got Image from internet. url: " + url);
                 }
@@ -249,6 +251,10 @@ public class ImageGetter {
                 writeImageToDisk(url, bitmap);
             }
         });
+    }
+
+    protected Bitmap compressImageFromInternet(String url, Bitmap bitmap) {
+        return compress(bitmap, DEFAULT_MAX_IMAGE_COMPRESS_SIZE);
     }
 
     protected String getUrlKey(String url) {
@@ -271,7 +277,6 @@ public class ImageGetter {
     public interface ImageGotListener {
         void OnImageGot(Bitmap bitmap);
     }
-
 
     // ImageView relative functions.
     public static void loadPic(ImageView imageview, String url) {
@@ -328,5 +333,13 @@ public class ImageGetter {
                 }
             }
         });
+    }
+
+    public static Bitmap resize(Bitmap bitmap, int newwidth, int newheight) {
+        return Bitmap.createScaledBitmap(bitmap, newwidth, newheight, true);
+    }
+
+    public static Bitmap compress(Bitmap bitmmap, long maxsize) {
+        return ImageUtils.compressByQuality(bitmmap, maxsize);
     }
 }
