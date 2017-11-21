@@ -2,16 +2,15 @@ package com.pan.testapp;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.pan.cleverimage.CleverImageView;
 import com.pan.cleverimage.ImageGetter;
+import com.pan.cleverimage.ImageAnotherChanger;
 
 public class MainActivity extends AppCompatActivity {
     private TextView textViewTest;
@@ -28,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         checkPermission();
 
-        ImageGetter.init();
+        ImageAnotherChanger.init();
 
         cleverImageView = (CleverImageView) findViewById(R.id.cleverImageView);
         findViewById(R.id.btnGetPic0).setOnClickListener(new View.OnClickListener() {

@@ -75,6 +75,10 @@ public class ImageGetter {
         return instance;
     }
 
+    protected ImageGetter() {
+        this(null, null, null);
+    }
+
     protected ImageGetter(String foldername, Integer cachesize, Integer poolsize) {
         initCacheFolder(foldername);
         initLRUCache(cachesize);
