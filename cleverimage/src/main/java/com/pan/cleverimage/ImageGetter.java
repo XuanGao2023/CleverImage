@@ -8,12 +8,14 @@ import android.os.HandlerThread;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.LruCache;
+import android.widget.ImageView;
 
 import com.pan.cleverimage.util.FileUtils;
 import com.pan.cleverimage.util.ImageUtils;
 
 import java.io.File;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -160,8 +162,10 @@ public class ImageGetter {
         String filepath = FILE_FOLDER + buildDiskFileName(url);
         File file = new File(filepath);
         if (file.exists()) {
+            System.out.println("isDiskFileValid: " + filepath + " true");
             return true;
         } else {
+            System.out.println("isDiskFileValid: " + filepath + " false");
             return false;
         }
     }
@@ -266,5 +270,63 @@ public class ImageGetter {
 
     public interface ImageGotListener {
         void OnImageGot(Bitmap bitmap);
+    }
+
+
+    // ImageView relative functions.
+    public static void loadPic(ImageView imageview, String url) {
+        loadPic(imageview, url, (Integer) null, false);
+    }
+
+    public static void loadPic(ImageView imageview, String url, Integer defaultres) {
+        loadPic(imageview, url, defaultres, false);
+    }
+
+    public static void loadPic(final ImageView imageview, String url, final Integer defaultres, boolean forceupdate) {
+        if (imageview == null || TextUtils.isEmpty(url)) {
+            return;
+        }
+        final WeakReference<ImageView> weakref = new WeakReference<ImageView>(imageview);
+        getPic(url, forceupdate, new ImageGetter.ImageGotListener() {
+            @Override
+            public void OnImageGot(Bitmap bitmap) {
+                if (weakref.get() != null) {
+                    ImageView imageview = weakref.get();
+                    if (bitmap != null) {
+                        imageview.setImageBitmap(bitmap);
+                    } else {
+                        if (defaultres != null && defaultres > 0) {
+                            imageview.setImageResource(defaultres);
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    public static void loadPic(ImageView imageview, String url, Bitmap defaultbitmap) {
+        loadPic(imageview, url, defaultbitmap, false);
+    }
+
+    public static void loadPic(final ImageView imageview, String url, final Bitmap defaultbitmap, boolean forceupdate) {
+        if (imageview == null) {
+            return;
+        }
+        final WeakReference<ImageView> weakref = new WeakReference<ImageView>(imageview);
+        getPic(url, forceupdate, new ImageGetter.ImageGotListener() {
+            @Override
+            public void OnImageGot(Bitmap bitmap) {
+                if (weakref.get() != null) {
+                    ImageView imageview = weakref.get();
+                    if (bitmap != null) {
+                        imageview.setImageBitmap(bitmap);
+                    } else {
+                        if (defaultbitmap != null) {
+                            imageview.setImageBitmap(defaultbitmap);
+                        }
+                    }
+                }
+            }
+        });
     }
 }
