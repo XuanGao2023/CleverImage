@@ -4,7 +4,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.HandlerThread;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.LruCache;
@@ -31,6 +30,8 @@ public class ImageGetter {
     public static final String DEFAULT_FOLDERNAME = "imagegetter";
     public static final int DEFAULT_MEM_LRUCACHE_SIZE = 50 * 1024 * 1024; //default memory cache size 20MB
     public static final int DEFAULT_DOWNLOAD_THREAD_POOL_SIZE = 5; //default thread pool size
+    public static final int DISKREADER_THREAD_POOL_SIZE = 2; //default disk reader thread pool size
+    public static final int DISKWRITER_THREAD_POOL_SIZE = 2; //default disk writer thread pool size
     private static final long DEFAULT_MAX_IMAGE_COMPRESS_SIZE = 2 * 1024 * 1024;
     protected static String FILE_FOLDER;
     protected static ImageGetter instance;
@@ -39,11 +40,9 @@ public class ImageGetter {
     protected Handler handlerMainThread = new Handler();
     private Random randomValueCreator = new Random();
 
-    protected HandlerThread handlerThreadDiskReader = new HandlerThread("image-disk-reader");
-    protected Handler handlerDiskReader;
-    protected HandlerThread handlerThreadDiskWriter = new HandlerThread("image-disk-writer");
-    protected Handler handlerDiskWriter;
-    protected ExecutorService fixedThreadPool;
+    protected ExecutorService diskReaderThreadPool;
+    protected ExecutorService diskWriterThreadPool;
+    protected ExecutorService netRequestThreadPool;
 
     public static synchronized ImageGetter getInstance() {
         if (instance == null) {
@@ -83,10 +82,6 @@ public class ImageGetter {
         initCacheFolder(foldername);
         initLRUCache(cachesize);
         initThreadPool(poolsize);
-        handlerThreadDiskReader.start();
-        handlerThreadDiskWriter.start();
-        handlerDiskReader = new Handler(handlerThreadDiskReader.getLooper());
-        handlerDiskWriter = new Handler(handlerThreadDiskWriter.getLooper());
     }
 
     protected void initCacheFolder(String foldername) {
@@ -111,7 +106,9 @@ public class ImageGetter {
         if (poolsize == null || poolsize <= 0) {
             poolsize = DEFAULT_DOWNLOAD_THREAD_POOL_SIZE;
         }
-        fixedThreadPool = Executors.newFixedThreadPool(poolsize);
+        netRequestThreadPool = Executors.newFixedThreadPool(poolsize);
+        diskReaderThreadPool = Executors.newFixedThreadPool(DISKREADER_THREAD_POOL_SIZE);
+        diskWriterThreadPool = Executors.newFixedThreadPool(DISKWRITER_THREAD_POOL_SIZE);
     }
 
     public static Bitmap getPic(String url, ImageGotListener listener) {
@@ -180,7 +177,7 @@ public class ImageGetter {
         if (!value) {
             return false;
         }
-        handlerDiskReader.post(new Runnable() {
+        diskReaderThreadPool.submit(new Runnable() {
             @Override
             public void run() {
                 Bitmap bitmap = null;
@@ -214,7 +211,7 @@ public class ImageGetter {
     }
 
     protected void writeImageToDisk(final String url, final Bitmap bitmap) {
-        handlerDiskWriter.post(new Runnable() {
+        diskWriterThreadPool.submit(new Runnable() {
             @Override
             public void run() {
                 String finalfilename = buildDiskFileName(url);
@@ -233,7 +230,7 @@ public class ImageGetter {
     }
 
     protected void loadImageFromInternet(final String url, final ImageGotListener listener) {
-        fixedThreadPool.submit(new Runnable() {
+        netRequestThreadPool.submit(new Runnable() {
             @Override
             public void run() {
                 Bitmap bitmap = null;

@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btnGetPic0).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cleverImageView.setImageUrl(FILE_LARGE);
+                cleverImageView.setImageUrl(FILE_URL0);
             }
         });
         findViewById(R.id.btnGetPic1).setOnClickListener(new View.OnClickListener() {
