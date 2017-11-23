@@ -33,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btnGetPic0).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+//                ImageGetter.Request request = cleverImageView.setImageUrl(FILE_URL0);
+                cleverImageView.setImageUrl(FILE_LARGE);
                 cleverImageView.setImageUrl(FILE_URL0);
             }
         });

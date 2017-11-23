@@ -112,6 +112,16 @@ public class ImageGetter {
         diskWriterThreadPool = Executors.newFixedThreadPool(DISKWRITER_THREAD_POOL_SIZE);
     }
 
+    /**
+     * one imageview only has one tag.
+     *
+     * @param imageview
+     * @param listener
+     * @param url
+     * @param defaultbitmap
+     * @param forceupdate
+     * @return
+     */
     protected Request buildRequest(ImageView imageview, ImageGotListener listener, String url
             , Bitmap defaultbitmap, Boolean forceupdate) {
         Request request = new Request(imageview, listener, url, defaultbitmap, forceupdate);
@@ -173,7 +183,20 @@ public class ImageGetter {
     }
 
     public static Request loadPic(ImageView imageview, ImageGotListener listener, String url, Bitmap defaultbitmap, boolean forceupdate) {
-        Request request = instance.buildRequest(imageview, listener, url, defaultbitmap, forceupdate);
+        Request request = null;
+        if (imageview != null) {
+            Object object = imageview.getTag();
+            if (object != null && object instanceof Request) {
+                //reuse the request.
+                request = (Request) object;
+                //ignore this request.
+                request.endRequest();
+            }
+        }
+        request = instance.buildRequest(imageview, listener, url, defaultbitmap, forceupdate);
+        if (imageview != null) {
+            imageview.setTag(request);
+        }
         request.getPic();
         return request;
     }
@@ -193,6 +216,8 @@ public class ImageGetter {
     }
 
     public class Request implements ImageGotListener {
+        public static final int IMAGEVIEW_TAG = 99000;
+
         public WeakReference<ImageView> wrImageView;
         public ImageGotListener imageGotListener;
         public String strUrl;
@@ -203,11 +228,14 @@ public class ImageGetter {
         /**
          * Cancel this request.
          */
-        public void cancel() {
+        public void endRequest() {
             if (requestIsOver) {
                 return;
             } else {
                 requestIsOver = true;
+                wrImageView.clear();
+                imageGotListener = null;
+                bitmapDefault = null;
             }
         }
 
@@ -231,6 +259,9 @@ public class ImageGetter {
         }
 
         protected Bitmap getPic() {
+            if (requestIsOver) {
+                throw new IllegalStateException("Request can't be reused!");
+            }
             if (bForceUpdate) {
                 if (DEBUG) {
                     Log.d(TAG, "Loading Image from internet. url: " + strUrl);
@@ -363,10 +394,14 @@ public class ImageGetter {
             String filepath = FILE_FOLDER + buildDiskFileName(url);
             File file = new File(filepath);
             if (file.exists()) {
-                System.out.println("isDiskFileValid: true " + filepath);
+                if (DEBUG) {
+                    System.out.println("isDiskFileValid: true " + filepath);
+                }
                 return true;
             } else {
-                System.out.println("isDiskFileValid: false " + filepath);
+                if (DEBUG) {
+                    System.out.println("isDiskFileValid: false " + filepath);
+                }
                 return false;
             }
         }
