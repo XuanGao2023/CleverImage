@@ -1,5 +1,6 @@
 package com.pan.cleverimage;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Environment;
@@ -111,88 +112,10 @@ public class ImageGetter {
         diskWriterThreadPool = Executors.newFixedThreadPool(DISKWRITER_THREAD_POOL_SIZE);
     }
 
-    public static Bitmap getPic(String url, ImageGotListener listener) {
-        return getPic(url, false, listener);
-    }
-
-    public static Bitmap getPic(String url, boolean forceupdate, ImageGotListener listener) {
-        ImageGetter ins = ImageGetter.getInstance();
-        if (forceupdate) {
-            if (DEBUG) {
-                Log.d(TAG, "Loading Image from internet. url: " + url);
-            }
-            ins.loadImageFromInternet(url, listener);
-            return null;
-        } else {
-            Bitmap bitmap = ins.bitmapLruCache.get(ins.getUrlKey(url));
-            if (bitmap != null) {
-                if (listener != null) {
-                    listener.OnImageGot(bitmap);
-                }
-                if (DEBUG) {
-                    Log.d(TAG, "Got Image from bitmapLruCache. url: " + url);
-                }
-                return bitmap;
-            } else {
-                if (ins.readImageFromDisk(url, listener)) {
-                    if (DEBUG) {
-                        Log.d(TAG, "Got Image from disk. url: " + url);
-                    }
-                    return null;
-                } else {
-                    if (DEBUG) {
-                        Log.d(TAG, "Loading Image from internet. url: " + url);
-                    }
-                    ins.loadImageFromInternet(url, listener);
-                }
-                return null;
-            }
-        }
-    }
-
-    protected String buildCacheKey(String url) {
-        return getUrlKey(url);
-    }
-
-    public static Bitmap loadFromDisk(String photopath) {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-        return BitmapFactory.decodeFile(photopath, options);
-    }
-
-    protected boolean isDiskFileValid(String url) {
-        String filepath = FILE_FOLDER + buildDiskFileName(url);
-        File file = new File(filepath);
-        if (file.exists()) {
-            System.out.println("isDiskFileValid: " + filepath + " true");
-            return true;
-        } else {
-            System.out.println("isDiskFileValid: " + filepath + " false");
-            return false;
-        }
-    }
-
-    protected boolean readImageFromDisk(final String url, final ImageGotListener listener) {
-        boolean value = instance.isDiskFileValid(url);
-        if (!value) {
-            return false;
-        }
-        diskReaderThreadPool.submit(new Runnable() {
-            @Override
-            public void run() {
-                Bitmap bitmap = null;
-                String filepath = FILE_FOLDER + buildDiskFileName(url);
-                bitmap = loadFromDisk(filepath);
-                if (bitmap == null) {
-                    FileUtils.deleteFile(filepath);
-                    postCallbackOnMainThread(listener, null);
-                    return;
-                }
-                bitmapLruCache.put(buildCacheKey(url), bitmap);
-                postCallbackOnMainThread(listener, bitmap);
-            }
-        });
-        return true;
+    protected Request buildRequest(ImageView imageview, ImageGotListener listener, String url
+            , Bitmap defaultbitmap, Boolean forceupdate) {
+        Request request = new Request(imageview, listener, url, defaultbitmap, forceupdate);
+        return request;
     }
 
     protected void postCallbackOnMainThread(final ImageGotListener listener, final Bitmap bitmap) {
@@ -206,64 +129,8 @@ public class ImageGetter {
         }
     }
 
-    protected String buildDiskFileName(String url) {
-        return getUrlKey(url);
-    }
-
-    protected void writeImageToDisk(final String url, final Bitmap bitmap) {
-        diskWriterThreadPool.submit(new Runnable() {
-            @Override
-            public void run() {
-                String finalfilename = buildDiskFileName(url);
-                FileUtils.deleteFile(finalfilename);
-                String tempfilename = finalfilename + System.currentTimeMillis() + randomValueCreator.nextInt();
-                String tempfilepath = FILE_FOLDER + finalfilename;
-                //in case the saving procedure interrupted by exception.
-                boolean success = ImageUtils.save(bitmap, tempfilepath, Bitmap.CompressFormat.JPEG);
-                if (!success) {
-                    FileUtils.deleteFile(tempfilename);
-                    return;
-                }
-                FileUtils.rename(tempfilepath, finalfilename);
-            }
-        });
-    }
-
-    protected void loadImageFromInternet(final String url, final ImageGotListener listener) {
-        netRequestThreadPool.submit(new Runnable() {
-            @Override
-            public void run() {
-                Bitmap bitmap = null;
-                InputStream in;
-                try {
-                    in = new java.net.URL(url).openStream();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    postCallbackOnMainThread(listener, null);
-                    return;
-                }
-                bitmap = BitmapFactory.decodeStream(in);
-                bitmap = compressImageFromInternet(url, bitmap);
-                if (DEBUG) {
-                    Log.d(TAG, "Got Image from internet. url: " + url);
-                }
-                bitmapLruCache.put(buildCacheKey(url), bitmap);
-                postCallbackOnMainThread(listener, bitmap);
-                writeImageToDisk(url, bitmap);
-            }
-        });
-    }
-
     protected Bitmap compressImageFromInternet(String url, Bitmap bitmap) {
         return compress(bitmap, DEFAULT_MAX_IMAGE_COMPRESS_SIZE);
-    }
-
-    protected String getUrlKey(String url) {
-        if (url == null) {
-            throw new RuntimeException("Null url passed in");
-        } else {
-            return url.replaceAll("[.:/,%?&=]", "_").replaceAll("[_]+", "_");
-        }
     }
 
     public static void clearMemCache() {
@@ -280,60 +147,35 @@ public class ImageGetter {
     }
 
     // ImageView relative functions.
-    public static void loadPic(ImageView imageview, String url) {
-        loadPic(imageview, url, (Integer) null, false);
+    public static Request loadPic(ImageView imageview, String url) {
+        return loadPic(imageview, url, (Integer) null, false);
     }
 
-    public static void loadPic(ImageView imageview, String url, Integer defaultres) {
-        loadPic(imageview, url, defaultres, false);
+    public static Request loadPic(ImageView imageview, String url, Integer defaultres) {
+        return loadPic(imageview, url, defaultres, false);
     }
 
-    public static void loadPic(final ImageView imageview, String url, final Integer defaultres, boolean forceupdate) {
-        if (imageview == null || TextUtils.isEmpty(url)) {
-            return;
+    public static Request loadPic(final ImageView imageview, String url, final Integer defaultres, boolean forceupdate) {
+        Bitmap bitmap = null;
+        if (defaultres != null) {
+            Context context = imageview.getContext();
+            bitmap = BitmapFactory.decodeResource(context.getResources(), defaultres);
         }
-        final WeakReference<ImageView> weakref = new WeakReference<ImageView>(imageview);
-        getPic(url, forceupdate, new ImageGetter.ImageGotListener() {
-            @Override
-            public void OnImageGot(Bitmap bitmap) {
-                if (weakref.get() != null) {
-                    ImageView imageview = weakref.get();
-                    if (bitmap != null) {
-                        imageview.setImageBitmap(bitmap);
-                    } else {
-                        if (defaultres != null && defaultres > 0) {
-                            imageview.setImageResource(defaultres);
-                        }
-                    }
-                }
-            }
-        });
+        return loadPic(imageview, null, url, bitmap, forceupdate);
     }
 
-    public static void loadPic(ImageView imageview, String url, Bitmap defaultbitmap) {
-        loadPic(imageview, url, defaultbitmap, false);
+    public static Request loadPic(ImageView imageview, String url, Bitmap defaultbitmap) {
+        return loadPic(imageview, url, defaultbitmap, false);
     }
 
-    public static void loadPic(final ImageView imageview, String url, final Bitmap defaultbitmap, boolean forceupdate) {
-        if (imageview == null) {
-            return;
-        }
-        final WeakReference<ImageView> weakref = new WeakReference<ImageView>(imageview);
-        getPic(url, forceupdate, new ImageGetter.ImageGotListener() {
-            @Override
-            public void OnImageGot(Bitmap bitmap) {
-                if (weakref.get() != null) {
-                    ImageView imageview = weakref.get();
-                    if (bitmap != null) {
-                        imageview.setImageBitmap(bitmap);
-                    } else {
-                        if (defaultbitmap != null) {
-                            imageview.setImageBitmap(defaultbitmap);
-                        }
-                    }
-                }
-            }
-        });
+    public static Request loadPic(final ImageView imageview, String url, final Bitmap defaultbitmap, boolean forceupdate) {
+        return loadPic(imageview, null, url, defaultbitmap, forceupdate);
+    }
+
+    public static Request loadPic(ImageView imageview, ImageGotListener listener, String url, Bitmap defaultbitmap, boolean forceupdate) {
+        Request request = instance.buildRequest(imageview, listener, url, defaultbitmap, forceupdate);
+        request.getPic();
+        return request;
     }
 
     public static Bitmap resize(Bitmap bitmap, int newwidth, int newheight) {
@@ -342,5 +184,191 @@ public class ImageGetter {
 
     public static Bitmap compress(Bitmap bitmmap, long maxsize) {
         return ImageUtils.compressByQuality(bitmmap, maxsize);
+    }
+
+    public static Bitmap loadFromDisk(String photopath) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        return BitmapFactory.decodeFile(photopath, options);
+    }
+
+    public class Request implements ImageGotListener {
+        public WeakReference<ImageView> wrImageView;
+        public ImageGotListener imageGotListener;
+        public String strUrl;
+        public Bitmap bitmapDefault;
+        public Boolean bForceUpdate;
+        public Boolean requestIsOver = false;
+
+        /**
+         * Cancel this request.
+         */
+        public void cancel() {
+            if (requestIsOver) {
+                return;
+            } else {
+                requestIsOver = true;
+            }
+        }
+
+        @Override
+        public void OnImageGot(Bitmap bitmap) {
+            if (!requestIsOver) {
+                if (imageGotListener != null) {
+                    imageGotListener.OnImageGot(bitmap);
+                } else {
+                    ImageView imageview = wrImageView.get();
+                    if (imageview != null) {
+                        if (bitmap != null) {
+                            imageview.setImageBitmap(bitmap);
+                        } else {
+                            imageview.setImageBitmap(bitmapDefault);
+                        }
+                    }
+                }
+            }
+            requestIsOver = true;
+        }
+
+        protected Bitmap getPic() {
+            if (bForceUpdate) {
+                if (DEBUG) {
+                    Log.d(TAG, "Loading Image from internet. url: " + strUrl);
+                }
+                loadImageFromInternet(strUrl, this);
+                return null;
+            } else {
+                Bitmap bitmap = bitmapLruCache.get(getUrlKey(strUrl));
+                if (bitmap != null) {
+                    OnImageGot(bitmap);
+                    if (DEBUG) {
+                        Log.d(TAG, "Got Image from bitmapLruCache. url: " + strUrl);
+                    }
+                    return bitmap;
+                } else {
+                    if (readImageFromDisk(strUrl, this)) {
+                        if (DEBUG) {
+                            Log.d(TAG, "Got Image from disk. url: " + strUrl);
+                        }
+                        return null;
+                    } else {
+                        if (DEBUG) {
+                            Log.d(TAG, "Loading Image from internet. url: " + strUrl);
+                        }
+                        loadImageFromInternet(strUrl, this);
+                    }
+                    return null;
+                }
+            }
+        }
+
+        protected String getUrlKey(String url) {
+            if (url == null) {
+                throw new RuntimeException("Null url passed in");
+            } else {
+                return url.replaceAll("[.:/,%?&=]", "_").replaceAll("[_]+", "_");
+            }
+        }
+
+        public Request(ImageView imageview, ImageGotListener listener, String url, Bitmap defaultbitmap, Boolean forceupdate) {
+            if (imageview == null && listener == null) {
+                throw new IllegalArgumentException("imageview is null and listener is null!");
+            }
+            if (TextUtils.isEmpty(url)) {
+                throw new IllegalArgumentException("url is null!");
+            }
+            this.wrImageView = new WeakReference<ImageView>(imageview);
+            this.imageGotListener = listener;
+            this.strUrl = url;
+            this.bitmapDefault = defaultbitmap;
+            this.bForceUpdate = forceupdate;
+        }
+
+        protected boolean readImageFromDisk(final String url, final ImageGotListener listener) {
+            boolean value = isDiskFileValid(url);
+            if (!value) {
+                return false;
+            }
+            diskReaderThreadPool.submit(new Runnable() {
+                @Override
+                public void run() {
+                    Bitmap bitmap = null;
+                    String filepath = FILE_FOLDER + buildDiskFileName(url);
+                    bitmap = loadFromDisk(filepath);
+                    if (bitmap == null) {
+                        FileUtils.deleteFile(filepath);
+                        postCallbackOnMainThread(listener, null);
+                        return;
+                    }
+                    bitmapLruCache.put(buildCacheKey(url), bitmap);
+                    postCallbackOnMainThread(listener, bitmap);
+                }
+            });
+            return true;
+        }
+
+        protected void writeImageToDisk(final String url, final Bitmap bitmap) {
+            diskWriterThreadPool.submit(new Runnable() {
+                @Override
+                public void run() {
+                    String finalfilename = buildDiskFileName(url);
+                    FileUtils.deleteFile(finalfilename);
+                    String tempfilename = finalfilename + System.currentTimeMillis() + randomValueCreator.nextInt();
+                    String tempfilepath = FILE_FOLDER + finalfilename;
+                    //in case the saving procedure interrupted by exception.
+                    boolean success = ImageUtils.save(bitmap, tempfilepath, Bitmap.CompressFormat.JPEG);
+                    if (!success) {
+                        FileUtils.deleteFile(tempfilename);
+                        return;
+                    }
+                    FileUtils.rename(tempfilepath, finalfilename);
+                }
+            });
+        }
+
+        protected void loadImageFromInternet(final String url, final ImageGotListener listener) {
+            netRequestThreadPool.submit(new Runnable() {
+                @Override
+                public void run() {
+                    Bitmap bitmap = null;
+                    InputStream in;
+                    try {
+                        in = new java.net.URL(url).openStream();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        postCallbackOnMainThread(listener, null);
+                        return;
+                    }
+                    bitmap = BitmapFactory.decodeStream(in);
+                    bitmap = compressImageFromInternet(url, bitmap);
+                    if (DEBUG) {
+                        Log.d(TAG, "Got Image from internet. url: " + url);
+                    }
+                    bitmapLruCache.put(buildCacheKey(url), bitmap);
+                    postCallbackOnMainThread(listener, bitmap);
+                    writeImageToDisk(url, bitmap);
+                }
+            });
+        }
+
+        protected String buildCacheKey(String url) {
+            return getUrlKey(url);
+        }
+
+        protected String buildDiskFileName(String url) {
+            return getUrlKey(url);
+        }
+
+        protected boolean isDiskFileValid(String url) {
+            String filepath = FILE_FOLDER + buildDiskFileName(url);
+            File file = new File(filepath);
+            if (file.exists()) {
+                System.out.println("isDiskFileValid: true " + filepath);
+                return true;
+            } else {
+                System.out.println("isDiskFileValid: false " + filepath);
+                return false;
+            }
+        }
     }
 }
