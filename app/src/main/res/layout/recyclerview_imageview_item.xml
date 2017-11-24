@@ -8,12 +8,4 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:textSize="20sp"
-        android:textColor="@color/colorAccent"
-        android:text="12" />
 </FrameLayout>

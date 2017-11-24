@@ -6,9 +6,10 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.ImageView;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -26,6 +27,7 @@ public class ImageViewRecyclerViewActivity extends AppCompatActivity {
     ImageAdapter imageAdapter;
     RecyclerView recyclerView;
     String[] images = imageUrls;
+    private static int activityCount = 1;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -37,18 +39,35 @@ public class ImageViewRecyclerViewActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         recyclerView.setAdapter(imageAdapter);
         imageAdapter.notifyDataSetChanged();
+        setTitle("" + activityCount++);
+    }
+
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_imageviewrecyclerview, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.clearMemCache:
+                ImageGetter.clearMemCache();
+                return true;
+            case R.id.clearDiskCache:
+                ImageGetter.clearDiskCache();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ItemViewHolder> {
 
         class ItemViewHolder extends RecyclerView.ViewHolder {
             public ImageView imageView;
-            public TextView textView;
 
             public ItemViewHolder(View itemView) {
                 super(itemView);
                 imageView = (ImageView) itemView.findViewById(R.id.imageView);
-                textView = (TextView) itemView.findViewById(R.id.textView);
             }
         }
 
@@ -63,8 +82,8 @@ public class ImageViewRecyclerViewActivity extends AppCompatActivity {
         public void onBindViewHolder(ItemViewHolder holder, int position) {
             if (position < images.length) {
                 String url = images[position];
+                holder.imageView.setImageResource(R.mipmap.ic_launcher);
                 ImageGetter.loadPic(holder.imageView, url);
-                holder.textView.setText("" + position);
                 holder.imageView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
