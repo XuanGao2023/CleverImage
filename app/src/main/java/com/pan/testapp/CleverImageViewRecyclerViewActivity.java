@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,9 +21,13 @@ import com.pan.cleverimage.ImageGetter;
  */
 
 public class CleverImageViewRecyclerViewActivity extends AppCompatActivity {
+    private static final String TAG = "CleverImageViewRecycler";
+
     ImageAdapter imageAdapter;
     RecyclerView recyclerView;
     String[] images = Images.imageUrls;
+    private static int activityCount = 0;
+    int activityId;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -34,6 +39,10 @@ public class CleverImageViewRecyclerViewActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         recyclerView.setAdapter(imageAdapter);
         imageAdapter.notifyDataSetChanged();
+        activityCount ++;
+        activityId = activityCount;
+        setTitle("" + activityId);
+        Log.d(TAG, "startActivity id: " + activityId);
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -84,5 +93,11 @@ public class CleverImageViewRecyclerViewActivity extends AppCompatActivity {
         public int getItemCount() {
             return images.length;
         }
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        Log.d(TAG, "finalizeActivity id: " + activityId);
     }
 }

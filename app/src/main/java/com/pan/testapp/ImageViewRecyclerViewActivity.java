@@ -27,7 +27,8 @@ public class ImageViewRecyclerViewActivity extends AppCompatActivity {
     ImageAdapter imageAdapter;
     RecyclerView recyclerView;
     String[] images = imageUrls;
-    private static int activityCount = 1;
+    private static int activityCount = 0;
+    int activityId;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -39,7 +40,10 @@ public class ImageViewRecyclerViewActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         recyclerView.setAdapter(imageAdapter);
         imageAdapter.notifyDataSetChanged();
-        setTitle("" + activityCount++);
+        activityCount ++;
+        activityId = activityCount;
+        setTitle("" + activityId);
+        Log.d(TAG, "startActivity id: " + activityId);
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -105,6 +109,6 @@ public class ImageViewRecyclerViewActivity extends AppCompatActivity {
     @Override
     protected void finalize() throws Throwable {
         super.finalize();
-        Log.d(TAG, "finished!");
+        Log.d(TAG, "finalizeActivity id: " + activityId);
     }
 }
