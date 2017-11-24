@@ -193,7 +193,7 @@ public class ImageGetter {
                 request.endRequest();
             }
         }
-        request = instance.buildRequest(imageview, listener, url, defaultbitmap, forceupdate);
+        request = getInstance().buildRequest(imageview, listener, url, defaultbitmap, forceupdate);
         if (imageview != null) {
             imageview.setTag(request);
         }
