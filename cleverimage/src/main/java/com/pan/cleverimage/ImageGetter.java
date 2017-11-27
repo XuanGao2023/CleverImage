@@ -374,6 +374,12 @@ public class ImageGetter {
             diskWriterThreadPool.submit(new Runnable() {
                 @Override
                 public void run() {
+                    /*
+                        Summary
+                        1. build disk file name relative to the url, then delete this file first.
+                        2. save the bitmap to a temp file.
+                        3. rename the temp file to the name built at the first step.
+                     */
                     String finalfilename = buildDiskFileName(url);
                     FileUtils.deleteFile(finalfilename);
                     String tempfilename = finalfilename + System.currentTimeMillis() + randomValueCreator.nextInt();
@@ -400,6 +406,14 @@ public class ImageGetter {
             netRequestThreadPool.submit(new Runnable() {
                 @Override
                 public void run() {
+                    /*
+                        Summary:
+                        1. open url stream.
+                        2. decode stream to bitmap.
+                        3. compress the bitmap.
+                        4. add to memory LRU cache.
+                        5. write the bitmap to disk.
+                     */
                     Bitmap bitmap = null;
                     InputStream in;
                     try {
