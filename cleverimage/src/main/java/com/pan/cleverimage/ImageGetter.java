@@ -143,10 +143,6 @@ public class ImageGetter {
         }
     }
 
-    protected Bitmap compressImageFromInternet(String url, Bitmap bitmap) {
-        return compress(bitmap, DEFAULT_MAX_IMAGE_COMPRESS_SIZE);
-    }
-
     public static void clearMemCache() {
         ImageGetter.getInstance().bitmapLruCache.evictAll();
     }
@@ -256,6 +252,7 @@ public class ImageGetter {
         public Bitmap bitmapDefault;
         public Boolean bForceUpdate;
         public Boolean requestIsOver = false;
+        public Integer compressMaxSize;
 
         /**
          * Cancel this request.
@@ -347,6 +344,10 @@ public class ImageGetter {
             this.bForceUpdate = forceupdate;
         }
 
+        public void setCompressMaxSize(Integer compresssize) {
+            this.compressMaxSize = compresssize;
+        }
+
         protected boolean readImageFromDisk(final String url, final ImageGotListener listener) {
             boolean value = isDiskFileValid(url);
             if (!value) {
@@ -389,6 +390,13 @@ public class ImageGetter {
             });
         }
 
+        protected Bitmap compressImageFromInternet(String url, Bitmap bitmap) {
+            if(compressMaxSize == null || compressMaxSize <= 0) {
+                return bitmap;
+            }
+            return compress(bitmap, compressMaxSize);
+        }
+
         protected void loadImageFromInternet(final String url, final ImageGotListener listener) {
             netRequestThreadPool.submit(new Runnable() {
                 @Override
@@ -403,6 +411,13 @@ public class ImageGetter {
                         return;
                     }
                     bitmap = BitmapFactory.decodeStream(in);
+                    if(bitmap == null) {
+                        if (DEBUG) {
+                            Log.d(TAG, "Not a valid image url! url: " + url);
+                        }
+                        postCallbackOnMainThread(listener, null);
+                        return;
+                    }
                     bitmap = compressImageFromInternet(url, bitmap);
                     if (DEBUG) {
                         Log.d(TAG, "Got Image from internet. url: " + url);
