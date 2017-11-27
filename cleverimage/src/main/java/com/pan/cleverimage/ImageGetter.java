@@ -16,6 +16,8 @@ import com.pan.cleverimage.util.ImageUtils;
 import java.io.File;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -217,6 +219,34 @@ public class ImageGetter {
         return BitmapFactory.decodeFile(photopath, options);
     }
 
+    public static String getPlainTextKey(String key) {
+        return key.replaceAll("[.:/,%?&=]", "_").replaceAll("[_]+", "_");
+    }
+
+    public static String getHashKey(String key) {
+        String cacheKey;
+        try {
+            final MessageDigest mDigest = MessageDigest.getInstance("MD5");
+            mDigest.update(key.getBytes());
+            cacheKey = bytesToHexString(mDigest.digest());
+        } catch (NoSuchAlgorithmException e) {
+            cacheKey = String.valueOf(key.hashCode());
+        }
+        return cacheKey;
+    }
+
+    private static String bytesToHexString(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < bytes.length; i++) {
+            String hex = Integer.toHexString(0xFF & bytes[i]);
+            if (hex.length() == 1) {
+                sb.append('0');
+            }
+            sb.append(hex);
+        }
+        return sb.toString();
+    }
+
     public class Request implements ImageGotListener {
         public static final int IMAGEVIEW_TAG = 99000;
 
@@ -299,7 +329,7 @@ public class ImageGetter {
             if (url == null) {
                 throw new RuntimeException("Null url passed in");
             } else {
-                return url.replaceAll("[.:/,%?&=]", "_").replaceAll("[_]+", "_");
+                return getPlainTextKey(url);
             }
         }
 
