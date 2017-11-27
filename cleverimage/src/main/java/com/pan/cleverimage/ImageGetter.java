@@ -12,6 +12,7 @@ import android.widget.ImageView;
 
 import com.pan.cleverimage.util.FileUtils;
 import com.pan.cleverimage.util.ImageUtils;
+import com.pan.cleverimage.util.Utils;
 
 import java.io.File;
 import java.io.InputStream;
@@ -210,9 +211,7 @@ public class ImageGetter {
     }
 
     public static Bitmap loadFromDisk(String photopath) {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-        return BitmapFactory.decodeFile(photopath, options);
+        return BitmapFactory.decodeFile(photopath);
     }
 
     public static String getPlainTextKey(String key) {
@@ -419,6 +418,13 @@ public class ImageGetter {
                         return;
                     }
                     bitmap = compressImageFromInternet(url, bitmap);
+                    if(bitmap == null) {
+                        if (DEBUG) {
+                            Log.d(TAG, "Compress operation returns null bitmap! url: " + url);
+                        }
+                        postCallbackOnMainThread(listener, null);
+                        return;
+                    }
                     if (DEBUG) {
                         Log.d(TAG, "Got Image from internet. url: " + url);
                     }
