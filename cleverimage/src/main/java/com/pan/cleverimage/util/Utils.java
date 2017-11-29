@@ -10,14 +10,6 @@ import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.List;
 
-/**
- * <pre>
- *     author: Blankj
- *     blog  : http://blankj.com
- *     time  : 16/12/08
- *     desc  : Utils初始化相关
- * </pre>
- */
 public final class Utils {
 
 	@SuppressLint("StaticFieldLeak")

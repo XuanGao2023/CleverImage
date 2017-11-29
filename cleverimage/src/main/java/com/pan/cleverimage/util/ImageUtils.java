@@ -32,7 +32,6 @@ import android.support.annotation.ColorInt;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.FloatRange;
 import android.support.annotation.IntRange;
-import android.support.v4.content.ContextCompat;
 import android.view.View;
 
 import java.io.BufferedOutputStream;
@@ -45,14 +44,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-/**
- * <pre>
- *     author: Blankj
- *     blog  : http://blankj.com
- *     time  : 2016/08/12
- *     desc  : 图片相关工具类
- * </pre>
- */
 public final class ImageUtils {
 
 	private ImageUtils() {
@@ -279,21 +270,21 @@ public final class ImageUtils {
 		return BitmapFactory.decodeByteArray(data, offset, data.length, options);
 	}
 
-	/**
-	 * 获取bitmap
-	 *
-	 * @param resId 资源id
-	 * @return bitmap
-	 */
-	public static Bitmap getBitmap(@DrawableRes final int resId) {
-		Drawable drawable = ContextCompat.getDrawable(Utils.getApp(), resId);
-		Canvas canvas = new Canvas();
-		Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
-		canvas.setBitmap(bitmap);
-		drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
-		drawable.draw(canvas);
-		return bitmap;
-	}
+//	/**
+//	 * 获取bitmap
+//	 *
+//	 * @param resId 资源id
+//	 * @return bitmap
+//	 */
+//	public static Bitmap getBitmap(@DrawableRes final int resId) {
+//		Drawable drawable = ContextCompat.getDrawable(Utils.getApp(), resId);
+//		Canvas canvas = new Canvas();
+//		Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+//		canvas.setBitmap(bitmap);
+//		drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+//		drawable.draw(canvas);
+//		return bitmap;
+//	}
 
 	/**
 	 * 获取bitmap

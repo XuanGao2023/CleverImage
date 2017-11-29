@@ -15,14 +15,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * <pre>
- *     author: Blankj
- *     blog  : http://blankj.com
- *     time  : 2016/05/03
- *     desc  : 文件相关工具类
- * </pre>
- */
 public final class FileUtils {
 
 	private FileUtils() {

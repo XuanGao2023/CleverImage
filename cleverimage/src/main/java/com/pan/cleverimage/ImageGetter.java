@@ -34,7 +34,7 @@ public class ImageGetter {
     private static final boolean DEBUG = true;
 
     public static final String DEFAULT_FOLDERNAME = "imagegetter";
-    public static final int DEFAULT_MEM_LRUCACHE_SIZE = 50 * 1024 * 1024; //default memory cache size 20MB
+    public static final int DEFAULT_MEM_LRUCACHE_SIZE = 50 * 1024 * 1024; //default memory cache size 50MB
     public static final int DEFAULT_DOWNLOAD_THREAD_POOL_SIZE = 5; //default thread pool size
     public static final int DISKREADER_THREAD_POOL_SIZE = 2; //default disk reader thread pool size
     public static final int DISKWRITER_THREAD_POOL_SIZE = 2; //default disk writer thread pool size
@@ -149,7 +149,7 @@ public class ImageGetter {
     }
 
     public static void clearDiskCache() {
-        //// TODO: 2017/10/25 if the file under this directory is operating?
+        //if the file under this directory is operating?
         FileUtils.deleteAllInDir(FILE_FOLDER);
     }
 
@@ -183,6 +183,14 @@ public class ImageGetter {
         return loadPic(imageview, null, url, defaultbitmap, forceupdate);
     }
 
+    public static Request loadPic(String url, ImageGotListener listener) {
+        return loadPic(url, listener, false);
+    }
+
+    public static Request loadPic(String url, ImageGotListener listener, boolean forceupdate) {
+        return loadPic(null, listener, url, null, forceupdate);
+    }
+
     public static Request loadPic(ImageView imageview, ImageGotListener listener, String url, Bitmap defaultbitmap, boolean forceupdate) {
         Request request = null;
         if (imageview != null) {
@@ -202,6 +210,9 @@ public class ImageGetter {
         return request;
     }
 
+    public static String getPhotoCacheDir() {
+        return FILE_FOLDER;
+    }
     public static Bitmap resize(Bitmap bitmap, int newwidth, int newheight) {
         return Bitmap.createScaledBitmap(bitmap, newwidth, newheight, true);
     }
@@ -462,12 +473,12 @@ public class ImageGetter {
             File file = new File(filepath);
             if (file.exists()) {
                 if (DEBUG) {
-                    System.out.println("isDiskFileValid: true " + filepath);
+                    Log.d(TAG, "isDiskFileValid: true " + filepath);
                 }
                 return true;
             } else {
                 if (DEBUG) {
-                    System.out.println("isDiskFileValid: false " + filepath);
+                    Log.d(TAG, "isDiskFileValid: false " + filepath);
                 }
                 return false;
             }

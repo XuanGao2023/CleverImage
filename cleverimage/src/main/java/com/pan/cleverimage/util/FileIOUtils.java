@@ -19,14 +19,6 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * <pre>
- *     author: Blankj
- *     blog  : http://blankj.com
- *     time  : 2017/06/22
- *     desc  : 文件读写相关工具类
- * </pre>
- */
 public final class FileIOUtils {
 
 	private FileIOUtils() {
