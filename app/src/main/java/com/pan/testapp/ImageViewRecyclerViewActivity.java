@@ -16,7 +16,7 @@ import android.support.v7.widget.RecyclerView;
 
 import com.pan.cleverimage.ImageGetter;
 
-import static com.pan.testapp.Images.imageUrls;
+import static com.pan.testapp.Images.imageThumbUrls;
 
 /**
  * Created by pan on 24/11/2017.
@@ -26,7 +26,7 @@ public class ImageViewRecyclerViewActivity extends AppCompatActivity {
     private static final String TAG = "ImageViewRecycler";
     ImageAdapter imageAdapter;
     RecyclerView recyclerView;
-    String[] images = imageUrls;
+    String[] images = imageThumbUrls;
     private static int activityCount = 0;
     int activityId;
 

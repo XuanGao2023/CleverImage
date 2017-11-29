@@ -166,6 +166,10 @@ public class ImageGetter {
         return loadPic(imageview, url, defaultres, false);
     }
 
+    public static Request loadPic(ImageView imageview, String url, boolean forceupdate) {
+        return loadPic(imageview, url, (Integer) null, forceupdate);
+    }
+
     public static Request loadPic(final ImageView imageview, String url, final Integer defaultres, boolean forceupdate) {
         Bitmap bitmap = null;
         if (defaultres != null) {
