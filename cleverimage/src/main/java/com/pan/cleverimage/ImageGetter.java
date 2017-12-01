@@ -12,15 +12,12 @@ import android.widget.ImageView;
 
 import com.pan.cleverimage.util.FileUtils;
 import com.pan.cleverimage.util.ImageUtils;
-import com.pan.cleverimage.util.Utils;
 
 import java.io.File;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
