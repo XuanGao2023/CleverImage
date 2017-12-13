@@ -28,7 +28,7 @@ import java.util.concurrent.Executors;
 
 public class ImageGetter {
     private final static String TAG = "ImageGetter";
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     public static final String DEFAULT_FOLDERNAME = "imagegetter";
     public static final int DEFAULT_MEM_LRUCACHE_SIZE = 50 * 1024 * 1024; //default memory cache size 50MB
@@ -36,7 +36,7 @@ public class ImageGetter {
     public static final int DISKREADER_THREAD_POOL_SIZE = 2; //default disk reader thread pool size
     public static final int DISKWRITER_THREAD_POOL_SIZE = 2; //default disk writer thread pool size
     private static final long DEFAULT_MAX_IMAGE_COMPRESS_SIZE = 2 * 1024 * 1024;
-    protected static String FILE_FOLDER;
+    protected static String strFileFolder;
     protected static ImageGetter instance;
 
     protected LruCache<String, Bitmap> bitmapLruCache;
@@ -91,7 +91,7 @@ public class ImageGetter {
         if (TextUtils.isEmpty(foldername)) {
             foldername = DEFAULT_FOLDERNAME;
         }
-        FILE_FOLDER = Environment.getExternalStorageDirectory() + File.separator + foldername + File.separator;
+        strFileFolder = Environment.getExternalStorageDirectory() + File.separator + foldername + File.separator;
     }
 
     protected void initLRUCache(Integer cachesize) {
@@ -147,7 +147,7 @@ public class ImageGetter {
 
     public static void clearDiskCache() {
         //if the file under this directory is operating?
-        FileUtils.deleteAllInDir(FILE_FOLDER);
+        FileUtils.deleteAllInDir(strFileFolder);
     }
 
     public interface ImageGotListener {
@@ -212,8 +212,9 @@ public class ImageGetter {
     }
 
     public static String getPhotoCacheDir() {
-        return FILE_FOLDER;
+        return strFileFolder;
     }
+
     public static Bitmap resize(Bitmap bitmap, int newwidth, int newheight) {
         return Bitmap.createScaledBitmap(bitmap, newwidth, newheight, true);
     }
@@ -233,9 +234,9 @@ public class ImageGetter {
     public static String getHashKey(String key) {
         String cacheKey;
         try {
-            final MessageDigest mDigest = MessageDigest.getInstance("MD5");
-            mDigest.update(key.getBytes());
-            cacheKey = bytesToHexString(mDigest.digest());
+            final MessageDigest digest = MessageDigest.getInstance("MD5");
+            digest.update(key.getBytes());
+            cacheKey = bytesToHexString(digest.digest());
         } catch (NoSuchAlgorithmException e) {
             cacheKey = String.valueOf(key.hashCode());
         }
@@ -368,7 +369,7 @@ public class ImageGetter {
                 @Override
                 public void run() {
                     Bitmap bitmap = null;
-                    String filepath = FILE_FOLDER + buildDiskFileName(url);
+                    String filepath = strFileFolder + buildDiskFileName(url);
                     bitmap = loadFromDisk(filepath);
                     if (bitmap == null) {
                         FileUtils.deleteFile(filepath);
@@ -388,14 +389,14 @@ public class ImageGetter {
                 public void run() {
                     /*
                         Summary
-                        1. build disk file name relative to the url, then delete this file first.
-                        2. save the bitmap to a temp file.
-                        3. rename the temp file to the name built at the first step.
-                     */
+						1. build disk file name relative to the url, then delete this file first.
+						2. save the bitmap to a temp file.
+						3. rename the temp file to the name built at the first step.
+					*/
                     String finalfilename = buildDiskFileName(url);
                     FileUtils.deleteFile(finalfilename);
                     String tempfilename = finalfilename + System.currentTimeMillis() + randomValueCreator.nextInt();
-                    String tempfilepath = FILE_FOLDER + finalfilename;
+                    String tempfilepath = strFileFolder + finalfilename;
                     //in case the saving procedure interrupted by exception.
                     boolean success = ImageUtils.save(bitmap, tempfilepath, Bitmap.CompressFormat.JPEG);
                     if (!success) {
@@ -408,7 +409,7 @@ public class ImageGetter {
         }
 
         protected Bitmap compressImageFromInternet(String url, Bitmap bitmap) {
-            if(compressMaxSize == null || compressMaxSize <= 0) {
+            if (compressMaxSize == null || compressMaxSize <= 0) {
                 return bitmap;
             }
             return compress(bitmap, compressMaxSize);
@@ -419,13 +420,13 @@ public class ImageGetter {
                 @Override
                 public void run() {
                     /*
-                        Summary:
-                        1. open url stream.
-                        2. decode stream to bitmap.
-                        3. compress the bitmap.
-                        4. add to memory LRU cache.
-                        5. write the bitmap to disk.
-                     */
+                    Summary:
+					1. open url stream.
+					2. decode stream to bitmap.
+					3. compress the bitmap.
+					4. add to memory LRU cache.
+					5. write the bitmap to disk.
+					*/
                     Bitmap bitmap = null;
                     InputStream in;
                     try {
@@ -436,7 +437,7 @@ public class ImageGetter {
                         return;
                     }
                     bitmap = BitmapFactory.decodeStream(in);
-                    if(bitmap == null) {
+                    if (bitmap == null) {
                         if (DEBUG) {
                             Log.d(TAG, "Not a valid image url! url: " + url);
                         }
@@ -444,7 +445,7 @@ public class ImageGetter {
                         return;
                     }
                     bitmap = compressImageFromInternet(url, bitmap);
-                    if(bitmap == null) {
+                    if (bitmap == null) {
                         if (DEBUG) {
                             Log.d(TAG, "Compress operation returns null bitmap! url: " + url);
                         }
@@ -470,7 +471,7 @@ public class ImageGetter {
         }
 
         protected boolean isDiskFileValid(String url) {
-            String filepath = FILE_FOLDER + buildDiskFileName(url);
+            String filepath = strFileFolder + buildDiskFileName(url);
             File file = new File(filepath);
             if (file.exists()) {
                 if (DEBUG) {
